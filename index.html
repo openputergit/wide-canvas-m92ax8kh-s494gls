@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered ATM Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .chatbot-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-slate-900 z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- Authentication Section -->
+            <div class="glass rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Authentication</h2>
+                <div class="space-y-4">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded-lg flex items-center justify-center gap-2">
+                        <i class="bi bi-credit-card"></i>
+                        Card Login
+                    </button>
+                    <button class="w-full bg-green-600 hover:bg-green-700 p-3 rounded-lg flex items-center justify-center gap-2">
+                        <i class="bi bi-fingerprint"></i>
+                        Biometric Login
+                    </button>
+                    <button class="w-full bg-purple-600 hover:bg-purple-700 p-3 rounded-lg flex items-center justify-center gap-2">
+                        <i class="bi bi-phone"></i>
+                        Mobile App Login
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Chatbot Section -->
+            <div class="glass rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">AI Assistant</h2>
+                <div class="chatbot-container mb-4" id="chatMessages">
+                    <div class="bg-blue-500/20 p-3 rounded-lg mb-2">
+                        Hello! How can I assist you today?
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="chatInput" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2" placeholder="Type your message...">
+                    <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 px-4 rounded-lg">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="glass rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Quick Actions</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="bg-cyan-600 hover:bg-cyan-700 p-4 rounded-lg flex flex-col items-center">
+                        <i class="bi bi-cash-stack text-2xl mb-2"></i>
+                        Withdraw
+                    </button>
+                    <button class="bg-emerald-600 hover:bg-emerald-700 p-4 rounded-lg flex flex-col items-center">
+                        <i class="bi bi-wallet2 text-2xl mb-2"></i>
+                        Deposit
+                    </button>
+                    <button class="bg-amber-600 hover:bg-amber-700 p-4 rounded-lg flex flex-col items-center">
+                        <i class="bi bi-arrow-left-right text-2xl mb-2"></i>
+                        Transfer
+                    </button>
+                    <button class="bg-rose-600 hover:bg-rose-700 p-4 rounded-lg flex flex-col items-center">
+                        <i class="bi bi-clock-history text-2xl mb-2"></i>
+                        History
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security Center -->
+            <div class="glass rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4">Security Center</h2>
+                <div class="space-y-4">
+                    <button class="w-full bg-red-600 hover:bg-red-700 p-3 rounded-lg flex items-center justify-center gap-2">
+                        <i class="bi bi-shield-lock"></i>
+                        Block Card
+                    </button>
+                    <button class="w-full bg-yellow-600 hover:bg-yellow-700 p-3 rounded-lg flex items-center justify-center gap-2">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Report Fraud
+                    </button>
+                    <button class="w-full bg-indigo-600 hover:bg-indigo-700 p-3 rounded-lg flex items-center justify-center gap-2">
+                        <i class="bi bi-gear"></i>
+                        Security Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Three.js Background
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const geometry = new THREE.IcosahedronGeometry(1, 1);
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x3b82f6,
+            wireframe: true
+        });
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            cube.rotation.x += 0.001;
+            cube.rotation.y += 0.001;
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
+
+        // Chatbot functionality
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const messages = document.getElementById('chatMessages');
+            
+            if (input.value.trim()) {
+                // User message
+                const userMsg = document.createElement('div');
+                userMsg.className = 'bg-slate-700 p-3 rounded-lg mb-2 ml-auto max-w-[80%]';
+                userMsg.textContent = input.value;
+                messages.appendChild(userMsg);
+
+                // Bot response (simulated)
+                setTimeout(() => {
+                    const botMsg = document.createElement('div');
+                    botMsg.className = 'bg-blue-500/20 p-3 rounded-lg mb-2 max-w-[80%]';
+                    botMsg.textContent = "I understand you need assistance. How can I help you further?";
+                    messages.appendChild(botMsg);
+                    messages.scrollTop = messages.scrollHeight;
+                }, 1000);
+
+                input.value = '';
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        // Remove loading screen
+        window.onload = function() {
+            document.getElementById('loading').style.display = 'none';
+            animate();
+        }
+
+        // Handle Enter key in chat
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
